@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, Layers, Save, Trash2, ArrowRight, Download, Check, Keyboard, FileText } from 'lucide-react';
 import { matchClaims } from './comparison';
 const labels = { unreviewed: 'Not reviewed', supported: 'Supported', contradicted: 'Contradicted', insufficient: 'Insufficient evidence', ambiguous: 'Ambiguous' };
-async function request(url, options) { const r = await fetch(url, options); const json = await r.json(); if (!r.ok) throw new Error(json.error || 'Request failed.'); return json; }
+async function request(url, options) { const r = await fetch(url, options); const json = await r.json(); if (r.status === 401) window.dispatchEvent(new Event('session-expired')); if (!r.ok) throw new Error(json.error || 'Request failed.'); return json; }
 const json = (body, method = 'POST') => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 export function Reviewer({ audit, claim, onSaved }) {

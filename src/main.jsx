@@ -4,20 +4,21 @@ import { ArrowUpRight, ArrowRight, Plus, Check, CheckCheck, FileText, Upload, X,
 import { sample } from './sample';
 import { Reviewer, SourceReader, Collections, Comparison, PrintableReport, Shortcuts } from './extras';
 import { WorkspaceHome, Stepper, Heatmap, ClaimInsight, InvestigationLab } from './workspace';
+import { AuthScreen } from './auth';
 import './style.css';
 import './workspace.css';
 
 const labels = { supported: 'Supported', contradicted: 'Contradicted', insufficient: 'Insufficient evidence', ambiguous: 'Ambiguous' };
 const short = { supported: 'Supported', contradicted: 'Contradicted', insufficient: 'Insufficient', ambiguous: 'Ambiguous' };
 const icons = { supported: CheckCircle2, contradicted: X, insufficient: CircleDashed, ambiguous: CircleHelp };
-async function api(url, options = {}) { const r = await fetch(url, options); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Request failed.'); return j; }
+async function api(url, options = {}) { const r = await fetch(url, options); const j = await r.json(); if (r.status === 401) window.dispatchEvent(new Event('session-expired')); if (!r.ok) throw new Error(j.error || 'Request failed.'); return j; }
 const post = body => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 function download(name, content, type = 'application/json') { const url = URL.createObjectURL(new Blob([content], { type })); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
 function Badge({ status }) { const Icon = icons[status] || CircleDashed; return <span className={`badge ${status}`}><Icon size={13}/>{labels[status] || status}</span>; }
 function Logo() { return <div className="brand"><span className="brand-icon"><CheckCheck size={23}/></span><span>second<span className="brand-light">opinion</span><small>BY JHAAD LABS</small></span></div>; }
 
 function App() {
-  const [session, setSession] = useState(null), [password, setPassword] = useState('');
+  const [session, setSession] = useState(null);
   const [view, setView] = useState('home'), [history, setHistory] = useState([]), [active, setActive] = useState(null);
   const [title, setTitle] = useState(''), [answer, setAnswer] = useState(''), [sources, setSources] = useState([]);
   const [sourceName, setSourceName] = useState(''), [sourceText, setSourceText] = useState(''), [pasteOpen, setPasteOpen] = useState(false);
@@ -27,6 +28,9 @@ function App() {
   const [library, setLibrary] = useState(false), [shortcuts, setShortcuts] = useState(false), [parentId, setParentId] = useState(null);
   const [step, setStep] = useState(0);
   const file = useRef(null), errorRef = useRef(null);
+  const signOut = async () => { try { await api('/api/logout', post({})); location.replace('/'); } catch(e) { setError(e.message); } };
+  useEffect(() => { const expired = () => location.reload(); window.addEventListener('session-expired', expired); return () => window.removeEventListener('session-expired', expired); }, []);
+  useEffect(() => { const check = () => { api('/api/session').then(next => { if (next.user?.id !== session?.user?.id) location.reload(); }).catch(() => {}); }; window.addEventListener('focus',check); return () => window.removeEventListener('focus',check); }, [session?.user?.id]);
   const refresh = () => api('/api/audits').then(setHistory).catch(e => setError(e.message));
   useEffect(() => { api('/api/session').then(setSession).catch(() => setError('Cannot reach the server. Start the application and try again.')); }, []);
   useEffect(() => { if (session?.authenticated) { refresh(); api('/api/health').then(setHealth).catch(() => {}); } }, [session]);
@@ -101,16 +105,17 @@ function App() {
   });
 
 
-  if (session && !session.authenticated) return <div className="login"><Logo/><div className="panel"><LockKeyhole size={28}/><h1>Your evidence workspace</h1><p>Enter the workspace password to access saved documents and audits.</p><form onSubmit={async e => { e.preventDefault(); try { await api('/api/login', post({ password })); setSession(await api('/api/session')); setError(''); } catch(e) { setError(e.message); } }}><label htmlFor="password">Workspace password</label><input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required/>{error && <p role="alert" className="error-text">{error}</p>}<button className="primary">Open workspace <ArrowRight size={17}/></button></form></div></div>;
+  if (!session) return <div className="auth-loading"><Logo/><p role="status">{error || 'Opening your workspace…'}</p>{error && <button className="secondary" onClick={() => location.reload()}>Try again</button>}</div>;
+  if (!session.authenticated) return <AuthScreen session={session} onSignedIn={() => location.replace('/')}/>;
 
   return <div className={`shell workspace-shell view-${view}`}>
-    <a className="skip-link" href="#main-content">Skip to content</a><aside className="sidebar"><Logo/><div className="workspace-label"><span className="avatar">SO</span><div>Jhaad Labs workspace<small>Private · local inference</small></div></div>
+    <a className="skip-link" href="#main-content">Skip to content</a><aside className="sidebar"><Logo/><div className="workspace-label"><span className="avatar">{session.user.name.slice(0,2).toUpperCase()}</span><div className="workspace-account" title={session.user.email}><strong>{session.user.name}</strong><small>{session.user.email}</small></div></div>
       <div className="nav-caption">WORKSPACE</div><nav aria-label="Main navigation"><button className={`nav-item ${view === 'home' ? 'active' : ''}`} onClick={() => setView('home')}><ShieldCheck size={18}/> Overview</button><button className={view === 'new' ? 'nav-item active' : 'nav-item'} onClick={newAudit}><Plus size={18}/> New audit <span className="nav-plus">+</span></button><button className={view === 'history' ? 'nav-item active' : 'nav-item'} onClick={() => { setView('history'); refresh(); }}><History size={18}/> Audit history <span className="nav-count">{history.length}</span></button><button className="nav-item" onClick={() => setLibrary(true)}><Layers size={18}/> Source collections</button><button className="nav-item" onClick={() => setMethod(true)}><BookOpen size={18}/> How it works <ArrowUpRight size={14}/></button></nav>
       <div className="sidebar-recent"><div className="nav-caption">RECENT AUDITS</div>{history.slice(0, 4).map(h => <button key={h.id} onClick={() => openAudit(h.id)} className={`recent ${active?.id === h.id ? 'chosen' : ''}`}><FileText size={15}/><span>{h.title}</span><i className={`status-dot ${h.status}`}/></button>)}{!history.length && <p className="quiet">Your work will appear here.</p>}</div>
       <div className="privacy-card"><ShieldCheck size={23}/><h3>Your sources stay with you.</h3><p>Inference runs on this server. No document text is sent to an AI API.</p><button onClick={() => setMethod(true)}>About the checker <ArrowUpRight size={13}/></button></div>
-      <div className="sidebar-bottom"><span className="online-dot"/> Local AI · no API key {session?.protected && <button aria-label="Sign out" onClick={async () => { await api('/api/logout', post({})); setSession({ authenticated: false }); }}><LogOut size={14}/></button>}</div>
+      <div className="sidebar-bottom"><span className="online-dot"/> Local AI · no API key {session?.protected && <button aria-label="Sign out" onClick={signOut}><LogOut size={14}/></button>}</div>
     </aside>
-    <div className="main"><header className="topbar"><div>Workspace <ChevronRight size={14}/><strong>{view === 'home' ? 'Overview' : view === 'new' ? `New audit / Step ${step+1}` : view === 'history' ? 'Audit history' : 'Audit report'}</strong></div><div className="topbar-tools"><button className="method-button" onClick={() => setShortcuts(true)} aria-label="Keyboard shortcuts">Shortcuts <kbd>?</kbd></button><button className="method-button" onClick={() => setMethod(true)}><CircleHelp size={16}/> Method & limitations</button></div></header>
+    <div className="main"><header className="topbar"><div>Workspace <ChevronRight size={14}/><strong>{view === 'home' ? 'Overview' : view === 'new' ? `New audit / Step ${step+1}` : view === 'history' ? 'Audit history' : 'Audit report'}</strong></div><div className="topbar-tools"><div className="account-mobile"><span>{session.user.name}</span><button onClick={signOut} aria-label="Sign out of account"><LogOut size={16}/><span>Sign out</span></button></div><button className="method-button" onClick={() => setShortcuts(true)} aria-label="Keyboard shortcuts">Shortcuts <kbd>?</kbd></button><button className="method-button" onClick={() => setMethod(true)}><CircleHelp size={16}/> Method & limitations</button></div></header>
       <main className="content" id="main-content" tabIndex={-1}>
         {error && <div className="alert error" ref={errorRef} tabIndex={-1} role="alert"><AlertTriangle size={18}/><span>{error}</span><button aria-label="Dismiss error" onClick={() => setError('')}><X size={16}/></button></div>}
         {notice && view === 'new' && <div className="alert notice" role="status"><CircleHelp size={18}/><span>{notice}</span><button aria-label="Dismiss message" onClick={() => setNotice('')}><X size={16}/></button></div>}
@@ -160,3 +165,4 @@ function Modal({ title, close, children, wide }) {
   return <dialog ref={dialog} className={`modal ${wide ? 'wide' : ''}`} onCancel={close} onClick={e => { if (e.target === dialog.current) close(); }}><div className="modal-header"><h2>{title}</h2><button className="icon-button" onClick={close} aria-label="Close dialog"><X size={20}/></button></div><div className="modal-body">{children}</div></dialog>;
 }
 createRoot(document.getElementById('root')).render(<App/>);
+

@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test';
+test.beforeEach(async ({ page }) => {
+  const response = await page.request.post('/api/auth/register', { data: { name: 'Review Tester', email: 'review-' + crypto.randomUUID() + '@example.com', password: 'browser test passphrase' } });
+  expect(response.status()).toBe(201);
+});
 async function screenshot(page, options) { await page.evaluate(() => window.scrollTo(0,0)); await page.screenshot({ ...options, animations: 'disabled' }); }
 
 test('complete real-model workflow: audit, review, source search, collection, revision comparison and exports', async ({ page }) => {

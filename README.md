@@ -2,7 +2,7 @@
 
 **A Jhaad Labs product. Evidence before confidence.** Audit an AI-generated answer against your own documents, inspect the source passages behind each finding, and revise the answer with a visible evidence trail.
 
-Built for the CRCE **Second Opinion: Audit Another AI** problem statement. This is a working, single-workspace research prototype with real local model inference, an Express API, persistent SQLite storage, and a React interface. There are no canned audit responses and no paid AI API key is required.
+Built for the CRCE **Second Opinion: Audit Another AI** problem statement. This is a working research prototype with individual user accounts with real local model inference, an Express API, persistent SQLite storage, and a React interface. There are no canned audit responses and no paid AI API key is required.
 
 [![Verify Second Opinion](https://github.com/jhaadhelp/Jhaadpay_college_round/actions/workflows/ci.yml/badge.svg)](https://github.com/jhaadhelp/Jhaadpay_college_round/actions/workflows/ci.yml)
 
@@ -17,7 +17,8 @@ Built for the CRCE **Second Opinion: Audit Another AI** problem statement. This 
 1. Create a Codespace from this repository (or choose **Code → Codespaces → Create codespace on main**).
 2. Wait for the setup to install dependencies, build the interface, and download the model. The first setup needs an internet connection.
 3. Open **port 3001** in the Ports panel. Keep its visibility **Private**. The app starts automatically.
-4. Click **Try an example**, then **Review audit → Run audit**. The results are computed on your Codespace's CPU.
+4. Create your email/password account or sign in with Google (after configuring OAuth). Each account has a private workspace.
+5. Click **Try an example**, then **Review audit → Run audit**. The results are computed on your Codespace's CPU.
 
 If the app is stopped, run `npm start` in the terminal. Codespaces use is subject to your GitHub account's quota and billing. The repository itself is private; this project does not make it public or create a paid deployment. GitHub Pages cannot run this Node/SQLite backend.
 
@@ -61,7 +62,7 @@ Open **http://127.0.0.1:3001**. Your existing GitHub access is needed to clone t
 | Exports | Markdown, complete JSON, and a print layout for **Print / PDF → Save as PDF**. |
 | Shortcuts | Ctrl/Cmd+Enter to run, J/K to move through claims, ? for help, Escape to dismiss dialogs. |
 | Operational controls | Job progress, cancellation, bounded queue, input limits, explicit model errors, restart recovery. |
-| Private workspace | Localhost by default, optional password login, same-origin write checks, no document text sent to an AI API. |
+| Private accounts | Google OAuth or email/password sign-in; a permanent user ID and ownership checks protect each account’s audits, sources, reviews and collections. |
 
 ## Three-minute demo
 
@@ -99,31 +100,28 @@ The GitHub workflow runs unit/API tests, a production build, dependency auditing
 - **No fabricated confidence.** Model scores are uncalibrated inference signals. They are not probabilities that a claim is true.
 - **PDF text only.** Scanned pages require OCR elsewhere. Complex tables, multi-column layouts, and images need extraction review. CSV is treated as text rather than a spreadsheet calculation engine.
 - **Heuristic reasoning/safety aids.** Dependency arrows are not proven causal links. Safety flags are not expert judgments. The numerical checker covers a narrow documented pattern.
-- **Single shared workspace.** A password protects the whole instance; this is not a multi-tenant service. All people with workspace access can see its audits and source collections.
+- **Account isolation.** All workspace routes require an account. Data access is scoped to its permanent user ID, including revisions and queued jobs. Server operators can still access the underlying database.
+- **Email account scope.** Passwords use salted scrypt hashes. Email verification, password recovery, and account linking are not implemented; use your original sign-in method and keep your password. Google identities require a verified email and valid ID token.
 - **Persistent, not encrypted-at-rest storage.** Audit/source data is in `data/audits.sqlite`; model files are under `.cache/models`. These and `.env` are excluded from Git. Deleting an audit removes its active records, not copies in backups or separately saved collections. Deleting a collection does not remove source snapshots already retained inside audits.
 
 ## Configuration and deployment
 
-Copy `.env.example` to `.env` if you need custom settings. Runtime data and secrets must never be committed.
+Copy `.env.example` to `.env` for local configuration. Runtime data and secrets must never be committed. See [account setup and deployment](docs/AUTHENTICATION.md) for Google Cloud credentials, HTTPS configuration, account behavior, and migration of old shared records.
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PORT` | `3001` | API and production interface port. |
-| `HOST` | `127.0.0.1` | Local binding; a non-loopback binding requires `APP_PASSWORD`. |
-| `DATA_DIR` | `./data` | SQLite location. |
-| `MODEL_CACHE_DIR` | `./.cache/models` | Downloaded model cache. |
-| `APP_PASSWORD` | unset | Optional single-workspace login; required for direct network exposure. |
-| `SECURE_COOKIE` | `0` | Set `1` when using HTTPS. |
-| `PUBLIC_ORIGIN` | unset | Exact allowed external origin behind your reverse proxy. Private Codespaces origins are detected automatically. |
+| Variable | Purpose |
+|---|---|
+| `PORT` | Server port (default 3001). |
+| `HOST` | Localhost by default. Network binding requires an HTTPS public origin and secure cookies. |
+| `DATA_DIR` | Persistent SQLite database, including users and hashed sessions. |
+| `MODEL_CACHE_DIR` | Persistent downloaded model cache. |
+| `PUBLIC_ORIGIN` | Exact website origin, no trailing slash; also determines Google's callback URL. |
+| `SECURE_COOKIE` | Set `1` on HTTPS hosting; `0` for localhost HTTP. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth web application credentials. Email sign-in works without them. |
+| `TRUST_PROXY` | Optional known reverse proxy IPs/CIDRs for correct client-IP limiting. |
 
-Optional container packaging is included. With a strong `APP_PASSWORD` configured in your shell:
+The old `APP_PASSWORD` is no longer used. Every user signs in with their own account. Existing shared records stay preserved but unassigned until the operator explicitly migrates them.
 
-```sh
-docker build -t second-opinion .
-docker run --rm -p 127.0.0.1:3001:3001 -e APP_PASSWORD -v second-opinion-data:/app/data -v second-opinion-models:/app/.cache/models second-opinion
-```
-
-No external hosting account is required for local use. Container instructions are provided as a packaging option; see the verification notes for environments actually tested.
+The included Dockerfile packages the app for a host with persistent volumes and HTTPS termination. Configure `PUBLIC_ORIGIN`, `SECURE_COOKIE=1`, and persistent directories before exposing it. Docker packaging has not been exercised in this Windows environment.
 
 ## Model and dependency provenance
 

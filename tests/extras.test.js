@@ -10,9 +10,11 @@ import { validateInput } from '../server/text.js';
 const payload = { title: 'Initial', answer: 'The study enrolled adults.', sources: [{ name: 'Reference', text: 'The study enrolled adults.' }] };
 async function fixture() {
   const dir = mkdtempSync(path.join(tmpdir(), 'second-opinion-extras-')), db = openDatabase(dir);
-  const server = createApp({ db, password: '', runAudit: async () => ({ claims: [{ id: 'c1', text: payload.answer, status: 'supported' }], counts: { supported: 1 } }) }).listen(0, '127.0.0.1');
+  const server = createApp({ db, runAudit: async () => ({ claims: [{ id: 'c1', text: payload.answer, status: 'supported' }], counts: { supported: 1 } }) }).listen(0, '127.0.0.1');
   await new Promise(r => server.on('listening', r)); const base = `http://127.0.0.1:${server.address().port}`;
-  return { db, send: (route, data, method = 'POST') => fetch(base + route, { method, headers: { 'Content-Type': 'application/json' }, ...(data ? { body: JSON.stringify(data) } : {}) }), close: async () => { await new Promise(r => server.close(r)); db.close(); rmSync(dir, { recursive: true, force: true }); } };
+  const login = await fetch(base + '/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Tester', email: 'tester@example.com', password: 'a long test password' }) });
+  const user = (await login.json()).user, cookie = login.headers.get('set-cookie').split(';')[0];
+  return { db: db.scope(user.id), send: (route, data, method = 'POST') => fetch(base + route, { method, headers: { 'Content-Type': 'application/json', Cookie: cookie }, ...(data ? { body: JSON.stringify(data) } : {}) }), close: async () => { await new Promise(r => server.close(r)); db.close(); rmSync(dir, { recursive: true, force: true }); } };
 }
 test('review notes persist independently of original AI verdicts and are deleted with their audit', async () => {
   const f = await fixture(); try {

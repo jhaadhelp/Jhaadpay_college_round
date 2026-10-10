@@ -50,8 +50,9 @@ Arithmetic results are shown with their formula. Source replacements are verbati
 | Method / route | Purpose |
 |---|---|
 | `GET /api/session` | Check workspace login. |
-| `POST /api/login`, `POST /api/logout` | Password sessions when enabled. |
-| `GET /api/health` | Model state and input limits. |
+| `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/logout` | Individual email/password accounts and session revocation. |
+| `GET /api/auth/google`, `GET /api/auth/google/callback` | Google authorization code flow and verified identity callback. |
+| `GET /api/health` | Public liveness; model state and limits only when signed in. |
 | `POST /api/extract` | One bounded multipart upload; returns extracted source data. |
 | `GET /api/audits`, `POST /api/audits` | List saved work / enqueue an audit. |
 | `GET /api/audits/:id`, `DELETE /api/audits/:id` | Inspect / delete a finished audit. |
@@ -64,7 +65,7 @@ Arithmetic results are shown with their formula. Source replacements are verbati
 
 Six sources; 60,000 characters per source; 180,000 combined source characters; 12,000 answer characters; 60 sentence/clause units; 8 MB upload size; 80 PDF pages; 50 saved collections. History lists the latest 100 audits. There is no URL-fetch endpoint. Source text is data for classification and is never executed as code or followed as instructions.
 
-Production defaults to loopback. Direct external binding requires a password. Password sessions are HttpOnly, SameSite=Strict, expire after 12 hours, and reset on restart. Login attempts are rate limited per socket address. All routes share one workspace access boundary. Use HTTPS and Secure cookies when placing an instance behind a reverse proxy. Do not treat this as audited multi-tenant infrastructure.
+Production defaults to loopback. All workspace requests require an account and receive an owner-scoped database facade. Queued jobs carry the owner ID, and revision parents must belong to that same owner. Shared records from older databases remain unassigned until an explicit operator migration. Passwords use salted scrypt. Hashed sessions persist in SQLite for 12 hours; cookies are HttpOnly, SameSite=Lax and Secure under HTTPS. Google identity is verified through its official library, with state, PKCE and nonce checks. See [authentication and deployment](AUTHENTICATION.md) for configuration, threat boundaries, and verification limits.
 
 ## Files
 

@@ -15,11 +15,13 @@
     "test:offline": "node scripts/test-offline-model.js",
     "model:download": "node scripts/download-model.js",
     "check": "npm test && npm run build",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "accounts:assign-legacy": "node scripts/assign-legacy-workspace.js"
   },
   "dependencies": {
     "@huggingface/transformers": "4.3.1",
     "express": "5.1.0",
+    "google-auth-library": "11.2.0",
     "lucide-react": "0.468.0",
     "multer": "2.4.0",
     "pdfjs-dist": "5.4.624",
