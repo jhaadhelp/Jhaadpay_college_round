@@ -8,7 +8,7 @@ Built for the CRCE **Second Opinion: Audit Another AI** problem statement. This 
 
 ![Second Opinion by Jhaad Labs workspace](docs/images/workspace.png)
 
-[View the evidence-review screen](docs/images/evidence-report.png)
+[Evidence review](docs/images/evidence-report.png) · [Coverage view](docs/images/coverage.png) · [Review insights](docs/images/review-insights.png)
 
 ## Run on GitHub
 
@@ -17,7 +17,7 @@ Built for the CRCE **Second Opinion: Audit Another AI** problem statement. This 
 1. Create a Codespace from this repository (or choose **Code → Codespaces → Create codespace on main**).
 2. Wait for the setup to install dependencies, build the interface, and download the model. The first setup needs an internet connection.
 3. Open **port 3001** in the Ports panel. Keep its visibility **Private**. The app starts automatically.
-4. Click **Try an example**, then **Run audit**. The results are computed on your Codespace's CPU.
+4. Click **Try an example**, then **Review audit → Run audit**. The results are computed on your Codespace's CPU.
 
 If the app is stopped, run `npm start` in the terminal. Codespaces use is subject to your GitHub account's quota and billing. The repository itself is private; this project does not make it public or create a paid deployment. GitHub Pages cannot run this Node/SQLite backend.
 
@@ -40,6 +40,10 @@ Open **http://127.0.0.1:3001**. Your existing GitHub access is needed to clone t
 
 | Capability | Implementation |
 |---|---|
+| Guided workspace | Overview with recent work, a three-step source/answer/review flow, clear primary actions, and an export menu. |
+| Evidence coverage | Click a highlighted claim in the original answer to open its evidence; unchecked text is kept visible. |
+| Review insights | Transparent wording checks flag certainty cues; evidence prompts suggest what to verify next. These are rules, separate from AI verdicts. |
+| Interaction design | Responsive layouts, visible keyboard focus, subtle transitions, and reduced-motion support. |
 | Source ingestion | PDF, TXT, Markdown, CSV, drag-and-drop, and pasted text. PDF page references are retained. |
 | Real AI comparison | Quantized DeBERTa natural-language inference model runs on the server CPU. |
 | Claim verdicts | Supported, contradicted, insufficient evidence, or ambiguous; never a forced binary decision. |

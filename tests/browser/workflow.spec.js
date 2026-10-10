@@ -1,16 +1,28 @@
 import { test, expect } from '@playwright/test';
+async function screenshot(page, options) { await page.evaluate(() => window.scrollTo(0,0)); await page.screenshot({ ...options, animations: 'disabled' }); }
 
 test('complete real-model workflow: audit, review, source search, collection, revision comparison and exports', async ({ page }) => {
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /A second look/ })).toBeVisible();
-  await page.screenshot({ path: 'test-results/workspace-desktop.png', fullPage: true });
+  await expect(page.getByRole('heading', { name: /Good answers/ })).toBeVisible();
+  await screenshot(page, { path: 'test-results/workspace-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Try an example' }).click();
   await expect(page.getByLabel('AI-generated answer')).toHaveValue(/Northstar/);
+  await page.getByRole('button', { name: 'Review audit', exact: true }).click();
   await page.getByRole('button', { name: 'Run audit', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Answer, under review' })).toBeVisible({ timeout: 150000 });
   await expect(page.locator('.claim-card')).toHaveCount(8);
-  await page.screenshot({ path: 'test-results/evidence-report.png', fullPage: true });
+  await page.getByRole('tab', { name: 'Coverage', exact: true }).click();
+  await expect(page.locator('.heat-claim')).toHaveCount(8);
+  await screenshot(page, { path: 'test-results/coverage.png', fullPage: true });
+  await page.locator('.heat-claim').filter({ hasText: '30% increase' }).click();
+  await expect(page.locator('.claim-card.selected')).toContainText('30%');
+  await page.getByRole('tab', { name: 'Review insights', exact: true }).click();
+  await expect(page.locator('.lab-claim')).toHaveCount(2);
+  await screenshot(page, { path: 'test-results/review-insights.png', fullPage: true });
+  await page.locator('.lab-claim').filter({hasText:'proved'}).click();
+  await expect(page.locator('.claim-insight')).toContainText('follow-up measurements');
+  await screenshot(page, { path: 'test-results/evidence-report.png', fullPage: true });
   await page.locator('.claim-card').filter({ hasText: '30% increase' }).click();
   await expect(page.locator('.calculation')).toContainText('20%');
   await page.getByLabel('Reviewer verdict').selectOption('contradicted');
@@ -26,6 +38,7 @@ test('complete real-model workflow: audit, review, source search, collection, re
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('.collection-row')).toContainText('Pilot evidence');
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+  await page.getByText('Export report', { exact: true }).click();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'JSON', exact: true }).click();
   expect((await downloadPromise).suggestedFilename()).toBe('second-opinion-audit.json');
@@ -37,12 +50,13 @@ test('complete real-model workflow: audit, review, source search, collection, re
   await page.getByRole('button', { name: 'Edit & re-audit' }).click();
   const field = page.getByLabel('AI-generated answer');
   await field.fill((await field.inputValue()).replace('30% increase', '20% increase'));
-  await field.press('Control+Enter');
+  await page.getByRole('button', { name: 'Review audit', exact: true }).click();
+  await page.keyboard.press('Control+Enter');
   await expect(page.getByRole('heading', { name: 'Answer, under review' })).toBeVisible({ timeout: 150000 });
   await page.getByRole('tab', { name: 'Compare', exact: true }).click();
   await expect(page.locator('.comparison-row')).toHaveCount(8);
   await expect(page.locator('.comparison-summary')).toContainText('same source text');
-  await page.screenshot({ path: 'test-results/revision-comparison.png', fullPage: true });
+  await screenshot(page, { path: 'test-results/revision-comparison.png', fullPage: true });
   await page.getByRole('tab', { name: 'Claims & evidence' }).click();
   await page.locator('.report-heading h1').click(); await page.keyboard.press('j');
   await expect(page.locator('.claim-card.selected')).toContainText('20% increase');
@@ -57,15 +71,44 @@ test('complete real-model workflow: audit, review, source search, collection, re
 test('mobile layout, pasted sources, uploads and validation', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Run audit', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Start a new audit', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Continue to answer', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Paste source text', exact: true }).click();
   await page.getByLabel('Source name', { exact: true }).fill('Pilot facts');
   await page.getByLabel('Source text', { exact: true }).fill('The pilot enrolled 120 adults.');
   await page.getByRole('button', { name: 'Add source', exact: true }).click();
-  await page.getByLabel('AI-generated answer').fill('The pilot enrolled 120 adults.');
-  await expect(page.getByRole('button', { name: 'Run audit', exact: true })).toBeEnabled();
   await page.getByLabel('Upload source documents').setInputFiles({ name: 'reference.txt', mimeType: 'text/plain', buffer: Buffer.from('The pilot lasted four weeks.') });
   await expect(page.locator('.source-item')).toHaveCount(2);
-  await page.screenshot({ path: 'test-results/workspace-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Continue to answer' }).click();
+  await page.getByLabel('AI-generated answer').fill('The pilot enrolled 120 adults.');
+  await page.getByRole('button', { name: 'Review audit', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Run audit', exact: true })).toBeEnabled();
+  await screenshot(page, { path: 'test-results/workspace-mobile.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+
+test('guided steps preserve inputs, prevent skipped prerequisites, and respect reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: /Good answers/ })).toBeVisible();
+  await screenshot(page, { path: 'test-results/overview-mobile.png', fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(page.getByRole('button', { name: /challenge|arena|play level/i })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Start a new audit', exact: true }).click();
+  const stages = page.getByRole('navigation', {name: 'Audit stages'});
+  await expect(stages.getByRole('button', {name: /Add the answer/})).toBeDisabled();
+  await expect(stages.getByRole('button', {name: /Review & run/})).toBeDisabled();
+  await page.getByRole('button', {name:'Try an example',exact:true}).click();
+  const original = await page.getByLabel('AI-generated answer').inputValue();
+  await page.getByLabel('AI-generated answer').fill(original + ' Additional review note.');
+  await page.getByRole('button', {name:'Back',exact:true}).click();
+  await expect(page.locator('.source-item')).toHaveCount(1);
+  await page.getByRole('button', {name:'Continue to answer',exact:true}).click();
+  await expect(page.getByLabel('AI-generated answer')).toHaveValue(original + ' Additional review note.');
+  await page.getByLabel('AI-generated answer').fill('');
+  await expect(page.getByRole('button', {name:'Review audit',exact:true})).toBeDisabled();
+  expect(await page.locator('.wizard-heading').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
