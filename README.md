@@ -77,6 +77,7 @@ See [the submission guide](docs/SUBMISSION.md) for the problem-statement mapping
 npm test                         # unit and API tests, no model download
 npm run build                    # production UI build
 npm run test:model               # real local model, labelled development cases
+npm run test:offline             # fresh-process inference with all fetches blocked (after model download)
 npx playwright install chromium # browser runtime, once
 npm run test:browser             # real-model end-to-end workflow and mobile checks
 npm audit --audit-level=high
