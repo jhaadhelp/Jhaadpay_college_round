@@ -1,0 +1,22 @@
+[
+  {"id":"direct-support","source":"The experiment enrolled 120 adult volunteers.","answer":"The experiment enrolled 120 adult volunteers.","expected":"supported"},
+  {"id":"population-conflict","source":"The experiment enrolled adults only. No children participated.","answer":"Children participated in the experiment.","expected":"contradicted"},
+  {"id":"unrelated-future","source":"The experiment enrolled 120 adults.","answer":"The product will become the market leader next year.","expected":"insufficient"},
+  {"id":"arithmetic-error","source":"Weekly users increased from 100 to 120.","answer":"Weekly users increased from 100 to 120, a 30% increase.","expected":"contradicted"},
+  {"id":"duration-paraphrase","source":"The trial lasted four weeks.","answer":"The trial ran for four weeks.","expected":"supported"},
+  {"id":"negation-conflict","source":"The study did not include a control group.","answer":"The study included a control group.","expected":"contradicted"},
+  {"id":"retention-unknown","source":"The pilot did not measure long-term retention.","answer":"The pilot proved that long-term retention improved.","expected":"contradicted"},
+  {"id":"number-conflict","source":"The survey collected feedback from 72 participants.","answer":"The survey collected feedback from 120 participants.","expected":"contradicted"},
+  {"id":"correct-number","source":"The survey collected feedback from 72 participants.","answer":"The survey collected feedback from 72 participants.","expected":"supported"},
+  {"id":"safety-restriction","source":"The team must obtain security approval before launching. Launching without security approval is prohibited.","answer":"The team should launch without security approval.","expected":"contradicted"},
+  {"id":"causal-leap","source":"Participants who used the dashboard reported higher satisfaction. The observational study cannot establish causation.","answer":"The dashboard caused higher satisfaction.","expected":"contradicted"},
+  {"id":"unrelated-weather","source":"The dashboard has three navigation tabs.","answer":"It will rain in Mumbai tomorrow.","expected":"insufficient"},
+  {"id":"price-unknown","source":"The product has three navigation tabs and a search bar.","answer":"The product costs 500 rupees per month.","expected":"insufficient"},
+  {"id":"subset-support","source":"All participants in the trial were adults.","answer":"The trial participants were adults.","expected":"supported"},
+  {"id":"location-conflict","source":"The conference took place in Mumbai, not Delhi.","answer":"The conference took place in Delhi.","expected":"contradicted"},
+  {"id":"unsupported-extrapolation","source":"The pilot evaluated 120 participants over four weeks.","answer":"The pilot guarantees success for every future user.","expected":"insufficient"},
+  {"id":"explicit-uncertainty","source":"The study could not determine whether the intervention improved retention.","answer":"It is uncertain whether the intervention improved retention.","expected":"supported"},
+  {"id":"quoted-negation","source":"It is false that the trial was successful.","answer":"The trial was successful.","expected":"contradicted"},
+  {"id":"mixed-units","source":"Revenue rose from 1 million to 2 billion.","answer":"Revenue rose from 1 million to 2 billion.","expected":"supported"},
+  {"id":"sources-disagree","sources":[{"name":"Report A","text":"The trial included a control group."},{"name":"Report B","text":"The trial did not include a control group."}],"answer":"The trial included a control group.","expected":"ambiguous"}
+]

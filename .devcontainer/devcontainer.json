@@ -1,0 +1,10 @@
+{
+  "name": "Second Opinion by Jhaad Labs",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:5.2.3-24-bookworm",
+  "forwardPorts": [3001],
+  "portsAttributes": { "3001": { "label": "Second Opinion", "onAutoForward": "openBrowser", "visibility": "private" } },
+  "postCreateCommand": "npm ci && npm run build && npm run model:download",
+  "postStartCommand": "bash scripts/codespace-start.sh",
+  "remoteUser": "node",
+  "customizations": { "vscode": { "extensions": ["dbaeumer.vscode-eslint"] } }
+}

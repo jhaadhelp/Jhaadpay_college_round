@@ -1,0 +1,330 @@
+{
+  "generatedAt": "2026-10-10T09:00:26.509Z",
+  "model": "Xenova/nli-deberta-v3-xsmall",
+  "revision": "2a4f614a701367a02d51389039afc998faeda637",
+  "count": 20,
+  "correct": 19,
+  "contradictionPrecision": 1,
+  "contradictionRecall": 0.8888888888888888,
+  "confusion": {
+    "supported": {
+      "supported": 6,
+      "contradicted": 0,
+      "insufficient": 0,
+      "ambiguous": 0
+    },
+    "contradicted": {
+      "supported": 0,
+      "contradicted": 8,
+      "insufficient": 1,
+      "ambiguous": 0
+    },
+    "insufficient": {
+      "supported": 0,
+      "contradicted": 0,
+      "insufficient": 4,
+      "ambiguous": 0
+    },
+    "ambiguous": {
+      "supported": 0,
+      "contradicted": 0,
+      "insufficient": 0,
+      "ambiguous": 1
+    }
+  },
+  "limitations": "Small authored development set, not a held-out benchmark or calibrated accuracy estimate. Results are disclosed even when they miss the expected label.",
+  "results": [
+    {
+      "id": "direct-support",
+      "expected": "supported",
+      "actual": "supported",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "supporting",
+          "scores": null
+        }
+      ]
+    },
+    {
+      "id": "population-conflict",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9960244848373155,
+            "entailment": 0.0013068928828242146,
+            "neutral": 0.0026686222798601874
+          }
+        },
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9963033734147553,
+            "entailment": 0.0002786727593223125,
+            "neutral": 0.0034179538259223267
+          }
+        }
+      ]
+    },
+    {
+      "id": "unrelated-future",
+      "expected": "insufficient",
+      "actual": "insufficient",
+      "correct": true,
+      "evidence": []
+    },
+    {
+      "id": "arithmetic-error",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "related",
+          "scores": {
+            "contradiction": 0.000607333421607705,
+            "entailment": 0.0006919131710204951,
+            "neutral": 0.9987007534073719
+          }
+        }
+      ]
+    },
+    {
+      "id": "duration-paraphrase",
+      "expected": "supported",
+      "actual": "supported",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "supporting",
+          "scores": {
+            "contradiction": 0.0005705883568956639,
+            "entailment": 0.9963602482602453,
+            "neutral": 0.0030691633828589335
+          }
+        }
+      ]
+    },
+    {
+      "id": "negation-conflict",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9981983310563313,
+            "entailment": 0.0003271698884118722,
+            "neutral": 0.0014744990552568965
+          }
+        }
+      ]
+    },
+    {
+      "id": "retention-unknown",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9910471982186668,
+            "entailment": 0.0003000568447590369,
+            "neutral": 0.008652744936574272
+          }
+        }
+      ]
+    },
+    {
+      "id": "number-conflict",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9989740935210095,
+            "entailment": 0.0002835734563697998,
+            "neutral": 0.0007423330226207423
+          }
+        }
+      ]
+    },
+    {
+      "id": "correct-number",
+      "expected": "supported",
+      "actual": "supported",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "supporting",
+          "scores": null
+        }
+      ]
+    },
+    {
+      "id": "safety-restriction",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.997571949520445,
+            "entailment": 0.00062254514883542,
+            "neutral": 0.0018055053307196346
+          }
+        },
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9942998378654236,
+            "entailment": 0.0007224110477038955,
+            "neutral": 0.004977751086872595
+          }
+        }
+      ]
+    },
+    {
+      "id": "causal-leap",
+      "expected": "contradicted",
+      "actual": "insufficient",
+      "correct": false,
+      "evidence": [
+        {
+          "relation": "related",
+          "scores": {
+            "contradiction": 0.029547007118195148,
+            "entailment": 0.24803338838497366,
+            "neutral": 0.7224196044968312
+          }
+        }
+      ]
+    },
+    {
+      "id": "unrelated-weather",
+      "expected": "insufficient",
+      "actual": "insufficient",
+      "correct": true,
+      "evidence": []
+    },
+    {
+      "id": "price-unknown",
+      "expected": "insufficient",
+      "actual": "insufficient",
+      "correct": true,
+      "evidence": []
+    },
+    {
+      "id": "subset-support",
+      "expected": "supported",
+      "actual": "supported",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "supporting",
+          "scores": {
+            "contradiction": 0.00045323881310838207,
+            "entailment": 0.9904630542810361,
+            "neutral": 0.009083706905855658
+          }
+        }
+      ]
+    },
+    {
+      "id": "location-conflict",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9977769416835298,
+            "entailment": 0.0006099102839857119,
+            "neutral": 0.001613148032484458
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-extrapolation",
+      "expected": "insufficient",
+      "actual": "insufficient",
+      "correct": true,
+      "evidence": []
+    },
+    {
+      "id": "explicit-uncertainty",
+      "expected": "supported",
+      "actual": "supported",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "supporting",
+          "scores": {
+            "contradiction": 0.0005139962727575859,
+            "entailment": 0.9928036998574112,
+            "neutral": 0.006682303869831255
+          }
+        }
+      ]
+    },
+    {
+      "id": "quoted-negation",
+      "expected": "contradicted",
+      "actual": "contradicted",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9868478075955937,
+            "entailment": 0.0025300092843978795,
+            "neutral": 0.010622183120008549
+          }
+        }
+      ]
+    },
+    {
+      "id": "mixed-units",
+      "expected": "supported",
+      "actual": "supported",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "supporting",
+          "scores": null
+        }
+      ]
+    },
+    {
+      "id": "sources-disagree",
+      "expected": "ambiguous",
+      "actual": "ambiguous",
+      "correct": true,
+      "evidence": [
+        {
+          "relation": "supporting",
+          "scores": null
+        },
+        {
+          "relation": "contradicting",
+          "scores": {
+            "contradiction": 0.9982308248835036,
+            "entailment": 0.0002892236795180704,
+            "neutral": 0.00147995143697828
+          }
+        }
+      ]
+    }
+  ]
+}

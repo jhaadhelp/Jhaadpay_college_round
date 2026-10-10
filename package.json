@@ -1,0 +1,36 @@
+{
+  "name": "second-opinion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,web \"node --watch server/index.js\" \"vite --host 127.0.0.1\"",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "test": "node --test tests/*.test.js",
+    "test:model": "node scripts/evaluate.js",
+    "model:download": "node scripts/download-model.js",
+    "check": "npm test && npm run build",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.3.1",
+    "express": "5.1.0",
+    "lucide-react": "0.468.0",
+    "multer": "2.4.0",
+    "pdfjs-dist": "5.4.624",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@vitejs/plugin-react": "5.0.4",
+    "concurrently": "9.2.5",
+    "vite": "7.3.7"
+  },
+  "author": "Jhaad Labs",
+  "description": "Second Opinion by Jhaad Labs: local AI answer auditing with traceable evidence."
+}

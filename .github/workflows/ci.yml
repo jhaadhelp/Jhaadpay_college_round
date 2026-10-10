@@ -1,0 +1,38 @@
+name: Verify Second Opinion
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run check
+      - uses: actions/cache@v4
+        with:
+          path: .cache/models
+          key: nli-deberta-2a4f614a-q8-transformers4-${{ runner.os }}
+      - run: npm run test:model
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification-results
+          path: |
+            evaluation/results.json
+            playwright-report/
+            test-results/*.png
+            test-results/*.pdf
+          retention-days: 14

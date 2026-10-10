@@ -6,5 +6,5 @@ data/
 *.log
 coverage/
 test-results/
-playwright-report/
 .DS_Store
+playwright-report/
